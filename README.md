@@ -69,6 +69,7 @@ A full-stack YouTube Clone application built with the MERN stack (MongoDB, Expre
 ## ✨ Screenshots
 
 > *Add screenshots of your app here if you like.*
+<img width="1440" alt="image" src="https://github.com/user-attachments/assets/3b9c943f-7914-45b6-8088-c61076db8ae7" />
 
 ---
 
