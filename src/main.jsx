@@ -9,6 +9,10 @@ import ErrorPage from './Components/404page.jsx'
 import Home from './Components/home.jsx'
 import VideoPlayerPage from './Components/videoPlayerPage.jsx'
 import ViewChannel from './Components/viewChannel.jsx'
+import { Provider } from 'react-redux'
+import youtubeStore from './utils/store.js'
+import { Toaster } from 'react-hot-toast';
+import SearchPage from './Components/searchPage.jsx'
 
 
 const appRouter = createBrowserRouter([
@@ -27,9 +31,14 @@ const appRouter = createBrowserRouter([
                 element : <VideoPlayerPage/>,
                 errorElement : <ErrorPage/>,
             },
-               {
-                path : "/viewChannel",
+            {
+                path : "/viewChannel/:channelUsername",
                 element : <ViewChannel/>,
+                errorElement : <ErrorPage/>,
+            },
+            {
+                path : "/searchPage/:searchString",
+                element : <SearchPage/>,
                 errorElement : <ErrorPage/>,
             }
         ]
@@ -47,7 +56,10 @@ const appRouter = createBrowserRouter([
 ])
 
 createRoot(document.getElementById('root')).render(
+    <Provider store={youtubeStore}>
+    <Toaster position="bottom-right" reverseOrder={false} />
 <RouterProvider router={appRouter}>
 </RouterProvider>
+    </Provider>
 
 )

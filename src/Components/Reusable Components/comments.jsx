@@ -1,17 +1,78 @@
 import { EllipsisVerticalIcon } from "@heroicons/react/16/solid";
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import apiRoutes from "../../utils/apiRoutes";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import EditCommentModal from "./editCommentModal";
+import { useState } from "react";
+import { useNavigate } from 'react-router-dom';
+import { logout } from "../../utils/authDataReducer";
+
 
 function Comment(props){
-    return <div className="flex gap-4 mt-10 items-start">
+  const {user,token} = useSelector((state)=> state.auth)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const openModal = () => setIsModalOpen(true);
+const closeModal = () => setIsModalOpen(false);
+ async function deleteComment(){
+   try{
+    const response = await fetch(apiRoutes.deleteComment,{
+      method : "POST",
+      headers: {
+        "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+      },
+      body : JSON.stringify({
+        videoId : props.videoId,
+        commentId : props.data._id,
+        userId : user._id
+      })
+    })
+       const data = await response.json();
+
+             if (response.status === 401) {
+      toast.error(data.message || "Session expired. Please login again.");
+      navigate("/login");
+      // Remove token from storage
+      localStorage.removeItem("user");
+
+      // Dispatch logout
+      dispatch(logout());
+      
+      return;
+    }
+    if (!response.ok) {
+      toast.error(data.message || "Delete was not possible at the moment");
+      return;
+    }
+
+    if (props.onDelete) {
+        props.onDelete(props.data._id);
+      }
+ 
+    toast.success(data.message || "Deleted");
+
+   }catch(err){
+    toast.error(err);
+    console.error(err);
+   }
+  }
+    return <>
+<div className="flex gap-4 mt-10 items-start justify-between">
         <div className="flex gap-4">
          <div className="w-auto">
-            <img className="h-[40px] w-[140px] lg:w-[60px]"  src="/avatar.png"></img>
+            <img className="h-[40px] w-[40px] lg:w-[40px] rounded-full"  src={props.data.userId?.avatar || "/avatar.png"}></img>
         </div>
         <div>
-            <h1 className="font-semibold text-sm text-white">@uditmathur6 <span className="font-light text-xs ml-2">6 Days ago</span></h1>
-            <p className="text-white text-sm mt-2">"Bad people do bad things, but they blame others and go on to live in peace.
-                Good people on the other hand beat themselves up about the smallest things."This is so true!</p>
+<h1 className="font-semibold text-sm text-white">
+  {props.data.userId?.username || "Unknown User"}
+  <span className="font-light text-xs ml-2">{props.data.timestamp}</span>
+</h1>
+
+            <p className="text-white text-sm mt-2">{props.data.comment}</p>
         </div>
         </div>
      
@@ -28,13 +89,13 @@ function Comment(props){
       >
         <div className="py-1">
           <MenuItem>
-            <p className="block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:text-gray-900 data-focus:outline-hidden"
+            <p onClick={openModal} className="block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:text-gray-900 data-focus:outline-hidden"
             >
            Edit
             </p>
           </MenuItem>
           <MenuItem>
-            <p className="block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:text-gray-900 data-focus:outline-hidden"
+            <p onClick={deleteComment} className="block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:text-gray-900 data-focus:outline-hidden"
             >
             Delete
             </p>
@@ -45,6 +106,15 @@ function Comment(props){
       </MenuItems>
     </Menu>
     </div>
+  <EditCommentModal
+  open={isModalOpen}
+  onClose={closeModal}
+  data={props.data}
+  videoId={props.videoId}
+  onEdit={props.onEdit}
+/>
+
+        </>
 }
 
 
